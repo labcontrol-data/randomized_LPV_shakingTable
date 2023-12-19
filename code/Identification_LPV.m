@@ -1,6 +1,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Code written by Mauricelle and Vargas
-% Last update: Nov 28, 2023
+% Last update: Dec 18, 2023
 % Motivation: experimental data collected
 % from a shaking table,  identification
 % procedure for quasi-LPV of linear systems
@@ -10,7 +10,7 @@
 
 clear all, close all, clc, format long, format compact,
 
-disp(' .... computing code for robust linear system from Shaking Table (it may take some minutes) ...')
+disp(' .... identification for Shaking Table (it may take some minutes) ...')
 
 
 fid = fopen('listaData.txt');
@@ -24,29 +24,32 @@ end
 
 fclose(fid);
 
+factor = [10 1];     %values obtained by trial and error 
 
-for cx=1:max(size(nome))
+n = 1;
+cx = 1;
+while cx<=max(size(nome))
     
     load(nome{cx});
     
     Ut =  out.Ut;
+    u = Ut;
     
-    x1real = out.timepos(:,2);
+    x1real = out.timepos(:,2)/100;
     x2real = out.Velocity;
     
-    
     TS = 0.005;
-    VarEPS = 1e-6;
     
-    Nit = max(size(Ut(1:end)));
     Ts=TS;
-    t=[0:Ts:Ts*(Nit)];
     
-    P{1} = 100000*diag([VarEPS VarEPS 10^3 10^3  VarEPS 10^3]);
-    Theta{1} = [0; 0; 0 ;0;0;0] ;   % initialize Theta
-    Q = diag([1 1 1 1 1 1]);
-    Sigma = 1;
-    I = eye(2);
+    VarEPS = 1;
+    
+    Nit = max(size(u));
+    Ts=TS;
+    t=[0:Ts:Ts*Nit];
+    
+    P{1} = 1*eye(7,7);
+    Delta{1} = [0 ; 0 ; 0; 0; 0; 0; 0];
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % procedure of Kalman filter to identify
@@ -56,148 +59,85 @@ for cx=1:max(size(nome))
     % \theta(k+1) = \theta(k) + w(k)
     %  x(k) = m(k)*theta(k) + e(k)
     % The last two equations feed the KF
-    
-    U_shifted=[0;Ut];
-    x1real_shifted = [0;x1real];
-    x2real_shifted = [0;x2real];
-    
-    Phi = zeros(2, 6, 4000);
-    
-    for k=1:Nit
-        Phi(:,:,k) = [x1real_shifted(k) x2real_shifted(k) 0 0 U_shifted(k) 0; 0 0 x1real_shifted(k) x2real_shifted(k) 0 U_shifted(k)];
-    end
-    
     for k=2:Nit
-        y{k} = [x1real(k); x2real(k)];
-        K{k} = P{k-1}*Phi(:,:,k)'*(Phi(:,:,k)*P{k-1}*Phi(:,:,k)' + Sigma*I)^(-1);
-        Theta{k} = Theta{k-1} + K{k}*(y{k} - Phi(:,:,k)*Theta{k-1});
-        P{k} = P{k-1} - K{k}*Phi(:,:,k)*P{k-1} + Q;
-        P{k} = (P{k}+P{k}')/2;  %use this line to increase stability
+        m{k-1} = [x1real(k-1) x2real(k-1)  0   0  u(k-1)  0 1;
+            0  0  x1real(k-1) x2real(k-1) 0 u(k-1) 0];
+        K{k} = P{k-1}*m{k-1}'*inv( factor(2)*eye(2,2) + m{k-1}*P{k-1}*m{k-1}' ) ;
+        Delta{k} = Delta{k-1} + K{k}*( [x1real(k) x2real(k)]' - m{k-1}*Delta{k-1} );
+        P{k} = factor(1)*diag([1, 1 ,1,1,1,1,1])  + P{k-1} - K{k}*m{k-1}*P{k-1};
+        P{k} = (P{k}+P{k}')/2;
+    end
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
+    heap_a11=[]; heap_a12=[];
+    heap_a21=[]; heap_a22=[];
+    heap_b1=[]; heap_b2=[]; heap_h=[];
+    vecx1=[];vecx2=[];
+    xsim{1}= [x1real(1) x2real(1)]';
+    for k=1:Nit
+        vecx1 = [vecx1 xsim{k}(1)];
+        vecx2 = [vecx2 xsim{k}(2)];
+        A = [Delta{k}(1:2,:)';
+            Delta{k}(3:4,:)'];
+        B = [Delta{k}(5:6,:)];
+        H = [Delta{k}(7,:); 0];
+        xsim{k+1} = A*xsim{k} + B*u(k) + H*1;
+        
+        heap_a11 = [heap_a11  A(1,1)];
+        heap_a12 = [heap_a12  A(1,2)];
+        heap_a21 = [heap_a21  A(2,1)];
+        heap_a22 = [heap_a22  A(2,2)];
+        heap_b1 = [heap_b1 B(1,1)];
+        heap_b2 = [heap_b2 B(2,1)];
+        heap_h = [heap_h H(1,1)];
     end
     
-    vecx1=[];
-    vecx2=[];
-    xsim = [x1real(1) x2real(1)]';
-    % xsim{1}= [x1real(1) x2real(1)]';
     
     for k=1:Nit
+        A_d{k} = [heap_a11(k) heap_a12(k);
+            heap_a21(k) heap_a22(k)];
+        B_d{k} = [heap_b1(k); heap_b2(k)];
+        H_d{k} = [heap_h(k); 0];
+    end    
+    
+    error = norm(vecx1-x1real);
+    cx
+    if (error>1000)
+        disp(nome{cx});
+        factor = [0.1*rand 10];   %values obtained by trial and error
+    else    
+        factor = [10 1];       %values obtained by trial and error
+               
+        figure(n)
+        subplot(2,1,1)
+        hold on
+        plot(Ts*[1:max(size(x1real))],x1real,'r-.','LineWidth',2);
+        plot(Ts*[1:max(size(x1real))],vecx1,'k','LineWidth',1)
+        hold off
+        grid
+        legend('real','estimated');
+        xlabel('seconds'),ylabel('x1')
         
-        vecx1=[vecx1  xsim(1)];
-        vecx2=[vecx2  xsim(2)];
+        subplot(2,1,2)
+        hold on
+        plot(Ts*[1:max(size(x2real))],x2real,'r-.','LineWidth',2);
+        plot(Ts*[1:max(size(x2real))],vecx2,'k','LineWidth',1)
+        hold off
+        grid
+        legend('real','estimated');
+        xlabel('seconds'),ylabel('x2')
         
-        % WRITE A CODE THAT WILL SIMULATE
-        % YOUR ESTIMATED MATRICES A{k}, B{k}
+        cx = cx+1;
         
-        Theta1(:,:,k) = Theta{k}; % converter cell para double
+        matrices_A = A_d;
+        matrices_B = B_d;
+        matrices_H = H_d;
+    
+        savefile = sprintf('rough_matrices_%0.3i.mat',n)
+        save(savefile, 'matrices_A', 'matrices_B', 'matrices_H','-v7');
         
-        A = [Theta1(1,1,k) Theta1(2,1,k)
-            Theta1(3,1,k) Theta1(4,1,k)];
-        B  = [Theta1(5,1,k) Theta1(6,1,k)]';
-        
-        xsim =[Theta1(1,1,k)*x1real(k)+ Theta1(2,1,k)*x2real(k) +  Theta1(5,1,k)*Ut(k);  Theta1(3,1,k)*x1real(k) +  Theta1(4,1,k)*x2real(k) + Theta1(6,1,k)*Ut(k)];
+        n = n+1;
         
     end
-    
-    a11=[];
-    a12=[];
-    a21=[];
-    a22=[];
-    b1=[];
-    b2=[];
-    for k=1:Nit
-        a11 = [a11; Theta1(1,1,k)];
-        a12 = [a12; Theta1(2,1,k)];
-        a21 = [a21; Theta1(3,1,k)];
-        a22 = [a22; Theta1(4,1,k)];
-        b1 = [b1; Theta1(5,1,k)];
-        b2 = [b2; Theta1(6,1,k)];
-    end
-    
-    % RMSE
-    sum1 = 0;
-    sum2 = 0;
-    for k = 1:4001
-        sum1 = sum1 + (x1real(k) - vecx1(k))^2;
-        sum2 = sum2 + (x2real(k) - vecx2(k))^2;
-    end
-    RMSE1 = sqrt(sum1/k);
-    RMSE2 = sqrt(sum2/k);
-    
-    %% Création d'un cell array pour stocker les matrices A
-    num_matrices = 4001;
-    matrices_A = cell(1, num_matrices);
-    matrices_B = cell(1, num_matrices);
-    
-    for k = 1:num_matrices
-        
-        aij_values = [a11(k) a12(k); a21(k) a22(k)];
-        bi_values = [b1(k);b2(k)];
-        
-        A = reshape(aij_values, 2, 2);
-        B = reshape(bi_values, 2, 1);
-        
-        matrices_A{k} = A;
-        matrices_B{k} = B;
-    end
-    
-    savefile = sprintf('rough_matrices_%0.3i.mat',cx)
-    save(savefile, 'matrices_A', 'matrices_B','-v7');
-    
-    
-    close all,
-    
-    figure(1)
-    subplot(2,1,1)
-    hold on
-    plot(Ts*[1:max(size(x1real))],x1real,'r-.','LineWidth',2);
-    plot(Ts*[1:max(size(x1real))],vecx1,'k','LineWidth',1)
-    hold off
-    grid
-    legend('real','estimated');
-    xlabel('seconds'),ylabel('Displacement(x1)')
-    
-    subplot(2,1,2)
-    hold on
-    plot(Ts*[1:max(size(x2real))],x2real,'r-.','LineWidth',2);
-    plot(Ts*[1:max(size(x2real))],vecx2,'k','LineWidth',1)
-    hold off
-    grid
-    legend('real','estimated');
-    xlabel('seconds'),ylabel('Velocity(x2)')
-    
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    figure(2)
-    
-    subplot(4,2,1)
-    plot(Ts*[1:max(size( Ut ))], Ut ,'b','LineWidth',2);
-    ylabel('Ut'),
-    grid
-    
-    subplot(4,2,2)
-    plot(Ts*[1:max(size(a11))],a11,'k','LineWidth',2);
-    grid, ylabel('a11'),
-    
-    subplot(4,2,3)
-    plot(Ts*[1:max(size( a12 ))],a12,'k','LineWidth',2);
-    grid, ylabel('a12'),
-    
-    subplot(4,2,4)
-    plot(Ts*[1:max(size( a21 ))],a21,'k','LineWidth',2);
-    grid, ylabel('a21'),
-    
-    subplot(4,2,5)
-    plot(Ts*[1:max(size( a22 ))],a22,'k','LineWidth',2);
-    grid, ylabel('a22'),
-    
-    subplot(4,2,6)
-    plot(Ts*[1:max(size( b1 ))],b1,'k','LineWidth',2);
-    grid, ylabel('b1'),
-    
-    subplot(4,2,7)
-    plot(Ts*[1:max(size( b2 ))],b2,'k','LineWidth',2);
-    grid, ylabel('b2');
     
 end
-
