@@ -187,24 +187,24 @@ for cx=1:max(size(nome))
     end
     heap_error{cx} = error;
      
-    figure(cx)
-    subplot(2,1,1)
-    hold on
-    plot(Ts*[1:max(size(x1real))],x1real,'r-.','LineWidth',2);
-    plot(Ts*[1:max(size(x1real))],vecx1,'k','LineWidth',1)
-    hold off
-    grid
-    legend('real','estimated');
-    xlabel('seconds'),ylabel('x1')
-    
-    subplot(2,1,2)
-    hold on
-    plot(Ts*[1:max(size(x2real))],x2real,'r-.','LineWidth',2);
-    plot(Ts*[1:max(size(x2real))],vecx2,'k','LineWidth',1)
-    hold off
-    grid
-    legend('real','estimated');
-    xlabel('seconds'),ylabel('x2')
+%     figure(cx)
+%     subplot(2,1,1)
+%     hold on
+%     plot(Ts*[1:max(size(x1real))],x1real,'r-.','LineWidth',2);
+%     plot(Ts*[1:max(size(x1real))],vecx1,'k','LineWidth',1)
+%     hold off
+%     grid
+%     legend('real','estimated');
+%     xlabel('seconds'),ylabel('x1')
+%     
+%     subplot(2,1,2)
+%     hold on
+%     plot(Ts*[1:max(size(x2real))],x2real,'r-.','LineWidth',2);
+%     plot(Ts*[1:max(size(x2real))],vecx2,'k','LineWidth',1)
+%     hold off
+%     grid
+%     legend('real','estimated');
+%     xlabel('seconds'),ylabel('x2')
       
 end
 
