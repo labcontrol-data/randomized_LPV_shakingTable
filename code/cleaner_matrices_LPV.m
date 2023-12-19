@@ -241,4 +241,3 @@ histogram(vecE1)
 
 figure(10*cx+2)
 histogram(vecE2)
-
