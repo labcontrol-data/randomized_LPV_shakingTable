@@ -1,6 +1,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Code written by Mauricelle and Vargas
-% Last update: Dec 19, 2023
+% Last update: Jan 3, 2024
 % Motivation: experimental data collected
 % from a shaking table. Procedure that "clears out"
 % matrices that are too close with each other.
@@ -145,7 +145,7 @@ for cx=1:max(size(nome))
     matrices_H = H_clean;
         
     savefile = sprintf('clean_matrices_%0.3i.mat',cx);
-    save(savefile, 'matrices_A', 'matrices_B', 'matrices_H','-v7');
+    save(savefile, 'matrices_A', 'matrices_B', 'matrices_H','A_po','B_po','H_po','-v7');
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % procedure to check how the 'clean procedure' affects
