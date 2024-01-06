@@ -1,6 +1,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Code written by Mauricelle and Vargas
-% Last update: Jan 3, 2024
+% Last update: Jan 6, 2024
 % Motivation: experimental data collected
 % from a shaking table. Procedure that "clears out"
 % matrices that are too close with each other.
@@ -38,7 +38,7 @@ for cx=1:max(size(nome))
     H_rough = matrices_H;
     
     init = 50; % this number can be any
-    
+    A_po = []; B_po = []; H_po = [];
     A_po{1} = A_rough{init};
     B_po{1} = B_rough{init};
     H_po{1} = H_rough{init};
