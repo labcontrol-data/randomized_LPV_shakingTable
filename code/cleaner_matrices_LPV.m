@@ -1,6 +1,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Code written by Mauricelle and Vargas
-% Last update: Jan 6, 2024
+% Last update: Jan 8, 2024
 % Motivation: experimental data collected
 % from a shaking table. Procedure that "clears out"
 % matrices that are too close with each other.
@@ -35,20 +35,18 @@ for cx=1:max(size(nome))
     
     A_rough = matrices_A;
     B_rough = matrices_B;
-    H_rough = matrices_H;
     
     init = 50; % this number can be any
-    A_po = []; B_po = []; H_po = [];
+    A_po = []; B_po = []; 
     A_po{1} = A_rough{init};
     B_po{1} = B_rough{init};
-    H_po{1} = H_rough{init};
     
     for j=1:max(size(A_rough))
         vecFlag = [];   % flag indicates that two numbers are close (0)
                         % or away (1) one from another
         count = 1;
         while (count<=max(size(A_po)))
-            if norm(A_rough{j}-A_po{count},'fro')<varEps
+            if norm([A_rough{j} B_rough{j}] -   [A_po{count} B_po{count}] ,'fro')<varEps
                 vecFlag = [vecFlag 0];
             else
                 vecFlag = [vecFlag 1];
@@ -57,95 +55,37 @@ for cx=1:max(size(nome))
         end
         if (sum(vecFlag)==max(size(vecFlag)))
             A_po = [A_po, A_rough{j}];
-        end
-    end
-    
-    
-    for j=1:max(size(B_rough))
-        vecFlag = [];   % flag indicates that two numbers are close (0)
-                        % or away (1) one from another
-        count = 1;
-        while (count<=max(size(B_po)))
-            if norm(B_rough{j}-B_po{count},'fro')<varEps
-                vecFlag = [vecFlag 0];
-            else
-                vecFlag = [vecFlag 1];
-            end
-            count = count+1;
-        end
-        if (sum(vecFlag)==max(size(vecFlag)))
             B_po = [B_po, B_rough{j}];
         end
     end
     
-    
-    for j=1:max(size(H_rough))
-        vecFlag = [];   % flag indicates that two numbers are close (0)
-                        % or away (1) one from another
-        count = 1;
-        while (count<=max(size(H_po)))
-            if norm(H_rough{j}-H_po{count},'fro')<varEps
-                vecFlag = [vecFlag 0];
-            else
-                vecFlag = [vecFlag 1];
-            end
-            count = count+1;
-        end
-        if (sum(vecFlag)==max(size(vecFlag)))
-            H_po = [H_po, H_rough{j}];
-        end
-    end
-    
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % procedure to 'clean' the rough terms from `A_rough'
-    % `A_clean' and `A_rough' have the same number of elements
-    % Every element of `A_clean' is at least `varEps' far away 
-    % from each other
+    % procedure to 'clean' the rough terms from `(A_rough,B_rough)'
+    % Note that `(A_clean,B_clean)' and `(A_rough,B_rough)' have the 
+    % same number of elements. Every element of `(A_clean,B_clean)' is 
+    % at least `varEps' far away from each other
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     A_clean{1}  = A_rough{1};
+    B_clean{1}  = B_rough{1};
     for j=2:max(size(A_rough))
         A_clean{j} = A_rough{j};
+        B_clean{j} = B_rough{j};
         count=1;
         while (count<=max(size(A_po)))
-            if norm(A_rough{j}-A_po{count},'fro')<varEps
+            if norm([A_rough{j} B_rough{j}] - [A_po{count} B_po{count}],'fro')<varEps
                 A_clean{j} = A_po{count};
+                B_clean{j} = B_po{count};
                 count = max(size(A_po));
             end
             count = count+1;
         end
     end
     
-    B_clean{1}  = B_rough{1};
-    for j=2:max(size(B_rough))
-        B_clean{j} = B_rough{j};
-        count=1;
-        while (count<=max(size(B_po)))
-            if norm(B_rough{j}-B_po{count},'fro')<varEps
-                B_clean{j} = B_po{count};
-                count = max(size(B_po));
-            end
-            count = count+1;
-        end
-    end
-    
-    H_clean{1}  = H_rough{1};
-    for j=2:max(size(H_rough))
-        H_clean{j} = H_rough{j};
-        count=1;
-        while (count<=max(size(H_po)))
-            if norm(H_rough{j}-H_po{count},'fro')<varEps
-                H_clean{j} = H_po{count};
-                count = max(size(H_po));
-            end
-            count = count+1;
-        end
-    end
     matrices_A = A_clean;
     matrices_B = B_clean;
-    matrices_H = H_clean;
         
     savefile = sprintf('clean_matrices_%0.3i.mat',cx);
-    save(savefile, 'matrices_A', 'matrices_B', 'matrices_H','A_po','B_po','H_po','-v7');
+    save(savefile, 'matrices_A', 'matrices_B','A_po','B_po','-v7');
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % procedure to check how the 'clean procedure' affects
@@ -164,8 +104,7 @@ for cx=1:max(size(nome))
     load(text_file);
     A_clean = matrices_A;
     B_clean = matrices_B;
-    H_clean = matrices_H;
-    
+        
     text_file = sprintf('rough_matrices_%0.3i.mat',cx);
     load(text_file);
     A_rough = matrices_A;
