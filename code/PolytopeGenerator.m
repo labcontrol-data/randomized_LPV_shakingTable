@@ -1,7 +1,5 @@
 function [Av,Bv] = PolytopeGenerator(A,B)
 
-disp('.... procedure may take many hours or days to complete  ....')
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % create the 'M' matrices. Both A(alpha) and B(alpha)
 % have the same index 'alpha'. This is the reason
@@ -67,4 +65,3 @@ for k=1:max(size(Delta))
     Av{k} = Delta{k}(1:la,1:ca);
     Bv{k} = Delta{k}(1:la,ca+1:ca+cb);
 end
-
