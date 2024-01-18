@@ -42,15 +42,17 @@ Typical usage of `maincode.m` consists of running it in your MATLAB. The code ge
 MATLAB
 ------
   1. Run in this order:
-     - `Identification_LPV.m'. This file processes the experimental data and computes the identification matrices of a time-varying linear system. The code runs a Kalman Filter to perform the identification.
-     - `maincode.m`.
+     - `Identification_LPV.m` This file processes the experimental data and computes the identification matrices of a time-varying linear system. The code runs a Kalman Filter to perform the identification.
+     - `cleaner_matrices_LPV.m` This file processes a large database of matrices and prunes them. It prepares the files for the next code.
+     - `finalVertices.m` Computes the vertices of the polytope (i.e., it generates A_1,...,A_n and B_1,...,B_n).
+     - `maincode.m` Main code that ensures the closed-loop system is stable under the randomized approach.
 
 More information
 ================
 
-* For more information about `maincode.m`, visit the author's page: [Prof. Alessandro N. Vargas](http://www.anvargas.com). You are welcome to help improving the code.
+* For more information about `maincode.m`, visit the author's page: [Prof. Alessandro N. Vargas](http://www.anvargas.com). You are welcome to help improve the code.
 * You are free to use the data in your research. If you do so, please contact the author [Prof. Alessandro N. Vargas](http://www.anvargas.com) 
-and let him know about your project. Depending on your research area, the author can help you interpret the data according to your application. The author can also suggest papers and books that can be helpful in your research.
+And let him know about your project. Depending on your research area, the author can help you interpret the data according to your application. The author can also suggest papers and books that can be helpful in your research.
 
 [![DOI](https://zenodo.org/badge/330236633.svg)](https://zenodo.org/badge/latestdoi/330236633)
 
