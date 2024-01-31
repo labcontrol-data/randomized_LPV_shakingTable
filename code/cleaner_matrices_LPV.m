@@ -9,11 +9,9 @@
 
 clear all, close all, clc, format short, format compact,
 
-
 disp(' .... procedure for clean matrices: Shaking Table (it may take some minutes) ...')
 
-
-varEps = 0.08; % tolerance, usually small, like 0.01 or 0.001
+varEps = 0.10; % tolerance, usually small, like 0.01 or 0.001 or any other number
 
 fid = fopen('listaData.txt');
 tline = fgetl(fid);
