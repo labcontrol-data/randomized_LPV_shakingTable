@@ -51,8 +51,8 @@ More information
 ================
 
 * For more information about `maincode.m`, visit the author's page: [Prof. Alessandro N. Vargas](http://www.anvargas.com). You are welcome to help improve the code.
-* You are free to use the data in your research. If you do so, please contact the author [Prof. Alessandro N. Vargas](http://www.anvargas.com) 
-And let him know about your project. Depending on your research area, the author can help you interpret the data according to your application. The author can also suggest papers and books that can be helpful in your research.
+* You are free to use the data in your research. When doing so, please contact the author [Prof. Alessandro N. Vargas](http://www.anvargas.com) 
+and let him know about your project. Depending on your research area, the author can help you interpret the data according to your application. The author can also suggest papers and books that can be helpful in your research.
 
 [![DOI](https://zenodo.org/badge/330236633.svg)](https://zenodo.org/badge/latestdoi/330236633)
 
@@ -74,4 +74,4 @@ How to cite the data of this repository:
 ```
 [1] MAYNE, D. Q. Optimal non-stationary estimation of the parameters of a linear system
 with Gaussian inputs. Journal of Electronics and Control, Taylor & Francis, v. 14, n. 1, p.
-101–112, 1963. Citado 2 vezes nas páginas 21 e 22.
+101–112, 1963.
