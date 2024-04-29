@@ -42,8 +42,6 @@ while cx<=max(size(nome))
     
     Ts=TS;
     
-    VarEPS = 1;
-    
     Nit = max(size(u));
     Ts=TS;
     t=[0:Ts:Ts*Nit];
