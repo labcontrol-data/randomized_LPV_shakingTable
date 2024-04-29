@@ -42,8 +42,8 @@ Typical usage of `maincode.m` consists of running it in your MATLAB. The code ge
 MATLAB
 ------
   1. Run in this order:
-     - `Identification_LPV.m` This file processes the experimental data and computes the identification matrices of a time-varying linear system. The code runs a Kalman Filter to perform the identification.
-     - `cleaner_matrices_LPV.m` This file processes a large database of matrices and prunes them. It prepares the files for the next code.
+     - `Identification_LPV.m` This file processes the experimental data and computes the identification matrices of a time-varying linear system. The code runs Mayne's estimator [1], a particular case of Kalman Filter, to perform the identification.
+     - `cleaner_matrices_LPV.m` This file processes a large database of matrices and prunes them. It prepares the files for the next step.
      - `finalVertices.m` Computes the vertices of the polytope (i.e., it generates A_1,...,A_n and B_1,...,B_n).
      - `maincode.m` Main code that ensures the closed-loop system is stable under the randomized approach.
 
@@ -72,3 +72,6 @@ How to cite the data of this repository:
     url          = {https://zenodo.org/badge/latestdoi/330236633}
 };
 ```
+[1] MAYNE, D. Q. Optimal non-stationary estimation of the parameters of a linear system
+with Gaussian inputs. Journal of Electronics and Control, Taylor & Francis, v. 14, n. 1, p.
+101–112, 1963. Citado 2 vezes nas páginas 21 e 22.
