@@ -1,6 +1,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Code written by Mauricelle and Vargas
-% Last update: Dec 18, 2023
+% Last update: April 29, 2024
 % Motivation: experimental data collected
 % from a shaking table,  identification
 % procedure for quasi-LPV of linear systems
@@ -24,7 +24,7 @@ end
 
 fclose(fid);
 
-factor = [10 1];     %values obtained by trial and error 
+factor = [5 1];     %values obtained by trial and error 
 
 n = 1;
 cx = 1;
@@ -60,7 +60,7 @@ while cx<=max(size(nome))
     for k=2:Nit
         m{k-1} = [x1real(k-1) x2real(k-1)  0   0  u(k-1)  0 1;
             0  0  x1real(k-1) x2real(k-1) 0 u(k-1) 0];
-        K{k} = P{k-1}*m{k-1}'*inv( factor(2)*eye(2,2) + m{k-1}*P{k-1}*m{k-1}' ) ;
+        K{k} = P{k-1}*m{k-1}'*inv( 1*eye(2,2) + m{k-1}*P{k-1}*m{k-1}' ) ;
         Delta{k} = Delta{k-1} + K{k}*( [x1real(k) x2real(k)]' - m{k-1}*Delta{k-1} );
         P{k} = factor(1)*diag([1, 1 ,1,1,1,1,1])  + P{k-1} - K{k}*m{k-1}*P{k-1};
         P{k} = (P{k}+P{k}')/2;
@@ -102,9 +102,9 @@ while cx<=max(size(nome))
     cx
     if (error>1000)
         disp(nome{cx});
-        factor = [0.1*rand 10];   %values obtained by trial and error
+        factor =  [0.05*rand 5];   %values obtained by trial and error
     else    
-        factor = [10 1];       %values obtained by trial and error
+        factor = [5 1];       %values obtained by trial and error
                
         figure(n)
         subplot(2,1,1)
@@ -137,5 +137,4 @@ while cx<=max(size(nome))
         n = n+1;
         
     end
-    
 end
