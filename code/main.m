@@ -1,9 +1,9 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Code written by Mauricelle and Vargas
-% Last update: Jan 31, 2024
+% Last update: May 23, 2024
 % Motivation: experimental data collected
-% from a shaking table. Procedure that computes 
-% stability according to `randomized approach'
+% from a shaking table. Procedure that xxxxxxxxx
+% xxxxxxxxxxxxxxxxxxxx.
 % E-mail: avargas@utfpr.edu.br
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -14,42 +14,45 @@ disp(' .... procedure to compute randomized stability test (it may take some hou
 
 reset(RandStream.getGlobalStream,sum(100*clock));  % ensures random seed to Matlab
 
-Nit=3;  %horizon or number of steps
+T=8;  %horizon or number of steps
 
-Rep = 5;
+Rep = 10;  %number of repetitions for the randomized approach
 
 text_file = sprintf('vertices_final.mat');
 load(text_file);
 
 A = A_vertices;
 B = B_vertices;
+C = [1  0];
 
-N=max(size(A)); % number of vertices
+N=max(size(A));   % number of vertices
 [n,l]=size(B{1}); %dimension of matrix B
 
 vecFeas = [];
 
-varEps = 1e-4;
-c1 = 1;
-c2 = 1;
-xi = ((1 - varEps)^N)*c1/c2  % xi has to be less than one
+c0 = 1e-4;
+c1 = 0.998;
+c2 = 0.999;
+xi = ((1 - c0)^T)*c1/c2  % xi has to be less than one
+
+K1 = 0.5;
+K2 = 0.1; 
+K3 = 60; 
 
 for m=1:Rep
     m
    
     warning('off','YALMIP:strict')
     %##########################################################################
-    %#  LMIS modificadas ....
+    %#  main LMIS 
     %##########################################################################
     LMI=set([]);
     for i=1:N
-        P{i}=sdpvar(n,n,'sy');
+        P{i}=sdpvar(n+1,n+1,'sy');
         LMI = [LMI, P{i}>= 0]; ;
     end
    
-    K =[-0.2   2];
-   
-    for k=1:Nit
+    for k=1:T
         A_alpha{k} = 0;
         B_alpha{k} = 0;
         P_alpha{k} = 0;
@@ -64,18 +67,18 @@ for m=1:Rep
         end
     end
    
-    vecFeas = [];
-    for k=1:Nit
-        if (k==Nit)
-            LMI = [LMI, P_alpha{1} < c1*eye(n,n)];
-            LMI = [LMI, P_alpha{Nit} > c2*eye(n,n)];
+    for k=1:T
+        if (k==T)
+            LMI = [LMI, P_alpha{1} < c1*eye(n+1,n+1)];
+            LMI = [LMI, P_alpha{T} > c2*eye(n+1,n+1)];
         else
-            A_cl = A_alpha{k} + B_alpha{k}*K;
-            LMI = [LMI, A_cl'*P_alpha{k+1}*A_cl - (1 - varEps)*P_alpha{k}  < 0 ];
+            % A_cl = (A_alpha{k} + B_alpha{k}*K);
+            A_cl = [A_alpha{k} + B_alpha{k}*[K1 K2], B_alpha{k}*K3; -C, eye(l,l)];
+            LMI = [LMI, A_cl'*P_alpha{k+1}*A_cl - (1 - c0)*P_alpha{k}  < 0 ];
         end
     end
    
-    ops=sdpsettings('solver','mosek','verbose',1);
+    ops=sdpsettings('solver','mosek','verbose',0);
     quiz = solvesdp(LMI,[],ops);
     p=min(checkset(LMI));
    
